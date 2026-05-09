@@ -31,7 +31,7 @@ var ValidRoles = map[Role]bool{
 type User struct {
 	gorm.Model
 	NamaLengkap string `gorm:"not null" json:"nama_lengkap"`
-	Username    string `gorm:"uniqueIndex;not null" json:"username"`
+	Username    string `gorm:"size:100;uniqueIndex;not null" json:"username"`
 	Password    string `gorm:"not null" json:"-"`
 	Role        Role   `gorm:"type:enum('admin','koordinator_pengawas','pengawas','jagal','kulit','cacah_daging','cacah_tulang','packing','distribusi');default:'pengawas'" json:"role"`
 }

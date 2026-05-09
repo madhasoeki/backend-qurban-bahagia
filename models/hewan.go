@@ -8,7 +8,7 @@ import (
 
 type Hewan struct {
 	gorm.Model
-	KodeHewan   string   `gorm:"uniqueIndex;not null" json:"kode_hewan"`
+	KodeHewan   string   `gorm:"size:50;uniqueIndex;not null" json:"kode_hewan"`
 	Tipe        string   `gorm:"type:enum('qurban','sedekah');default:'qurban'" json:"tipe"`
 	JenisHewan  string   `gorm:"type:enum('sapi','kambing');not null" json:"jenis_hewan"`
 	NamaSohibul []string `gorm:"serializer:json;not null" json:"nama_sohibul"`
