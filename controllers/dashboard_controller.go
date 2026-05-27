@@ -68,10 +68,10 @@ func GetPublicHewan(c *gin.Context) {
 	}
 
 	query = query.Order(`CASE
-		WHEN waktu_mulai_jagal IS NOT NULL AND waktu_selesai_jagal IS NULL THEN 1
+		WHEN waktu_mulai_jagal IS NOT NULL AND waktu_selesai_kuliti IS NULL THEN 1
 		WHEN waktu_mulai_jagal IS NULL THEN 2
 		ELSE 3 END ASC`)
-	query = query.Order("jenis_hewan DESC").Order("tipe ASC").Order("kode_hewan ASC")
+	query = query.Order("waktu_mulai_jagal ASC").Order("kode_hewan ASC")
 
 	if err := query.Find(&hewan).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil data hewan"})

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"qurban/config"
 	"qurban/models"
@@ -69,11 +70,31 @@ func GetHewan(c *gin.Context) {
 		)
 	}
 
-	query = query.Order(`CASE
-		WHEN waktu_mulai_jagal IS NOT NULL AND waktu_selesai_jagal IS NULL THEN 1
-		WHEN waktu_mulai_jagal IS NULL THEN 2
-		ELSE 3 END ASC`)
-	query = query.Order("jenis_hewan DESC").Order("tipe ASC").Order("kode_hewan ASC")
+	startCol := "waktu_mulai_jagal"
+	endCol := "waktu_selesai_jagal"
+
+	switch userRole {
+	case "kulit":
+		startCol = "waktu_mulai_kuliti"
+		endCol = "waktu_selesai_kuliti"
+	case "cacah_daging":
+		startCol = "waktu_mulai_cacah_daging"
+		endCol = "waktu_selesai_cacah_daging"
+	case "cacah_tulang":
+		startCol = "waktu_mulai_cacah_tulang"
+		endCol = "waktu_selesai_cacah_tulang"
+	case "packing", "distribusi":
+		startCol = "waktu_mulai_packing"
+		endCol = "waktu_selesai_packing"
+	}
+
+	orderStatus := fmt.Sprintf(`CASE
+		WHEN %s IS NOT NULL AND %s IS NULL THEN 1
+		WHEN %s IS NULL THEN 2
+		ELSE 3 END ASC`, startCol, endCol, startCol)
+
+	query = query.Order(orderStatus)
+	query = query.Order(fmt.Sprintf("%s ASC", startCol)).Order("kode_hewan ASC")
 
 	if err := query.Find(&hewan).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil data hewan"})
