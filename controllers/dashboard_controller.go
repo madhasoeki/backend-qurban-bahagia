@@ -42,8 +42,38 @@ func GetDashboardSummary(c *gin.Context) {
 
 func GetPublicHewan(c *gin.Context) {
 	var hewan []models.Hewan
+	search := c.Query("search")
+	tipe := c.Query("tipe")
+	jenis := c.Query("jenis_hewan")
+	qPengawas := c.Query("pengawas_id")
 
-	if err := config.DB.Preload("Pengawas").Find(&hewan).Error; err != nil {
+	query := config.DB.Preload("Pengawas")
+
+	if qPengawas != "" {
+		query = query.Where("pengawas_id = ?", qPengawas)
+	}
+	if tipe != "" {
+		query = query.Where("tipe = ?", tipe)
+	}
+	if jenis != "" {
+		query = query.Where("jenis_hewan = ?", jenis)
+	}
+	if search != "" {
+		term := "%" + search + "%"
+		query = query.Where(
+			config.DB.Where("kode_hewan LIKE ?", term).
+				Or("nama_sohibul LIKE ?", term).
+				Or("catatan LIKE ?", term),
+		)
+	}
+
+	query = query.Order(`CASE
+		WHEN waktu_mulai_jagal IS NOT NULL AND waktu_selesai_jagal IS NULL THEN 1
+		WHEN waktu_mulai_jagal IS NULL THEN 2
+		ELSE 3 END ASC`)
+	query = query.Order("jenis_hewan DESC").Order("tipe ASC").Order("kode_hewan ASC")
+
+	if err := query.Find(&hewan).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil data hewan"})
 		return
 	}
