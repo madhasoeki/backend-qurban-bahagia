@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
+	"strings"
 
 	"qurban/config"
 	"qurban/models"
@@ -45,12 +47,21 @@ func GetPublicHewan(c *gin.Context) {
 	search := c.Query("search")
 	tipe := c.Query("tipe")
 	jenis := c.Query("jenis_hewan")
-	qPengawas := c.Query("pengawas_id")
+	qPengawasID := strings.TrimSpace(c.Query("pengawas_id"))
+	qPengawasName := strings.TrimSpace(c.Query("pengawas"))
 
 	query := config.DB.Preload("Pengawas")
 
-	if qPengawas != "" {
-		query = query.Where("pengawas_id = ?", qPengawas)
+	if qPengawasName != "" {
+		term := "%" + qPengawasName + "%"
+		query = query.Joins("Pengawas").Where("users.nama_lengkap LIKE ?", term)
+	} else if qPengawasID != "" {
+		if id, err := strconv.ParseUint(qPengawasID, 10, 64); err == nil {
+			query = query.Where("pengawas_id = ?", id)
+		} else {
+			term := "%" + qPengawasID + "%"
+			query = query.Joins("Pengawas").Where("users.nama_lengkap LIKE ?", term)
+		}
 	}
 	if tipe != "" {
 		query = query.Where("tipe = ?", tipe)
